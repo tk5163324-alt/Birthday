@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎉 Happy Birthday!</title>
+  <meta name="description" content="A cheerful, animated birthday page with an auto image slider and a Surprise button." />
+  <style>
+    :root{
+      --bg1:#ff9a9e;  /* gradient start */
+      --bg2:#fad0c4;  /* gradient middle */
+      --bg3:#fbc2eb;  /* gradient end */
+      --ink:#1a1a1a;  /* text */
+      --muted:#444;
+      --card:#ffffffcc;
+      --accent:#7c3aed; /* purple */
+      --accent-2:#10b981; /* green */
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+      color:var(--ink);
+      background: radial-gradient(1200px 800px at 20% -10%, var(--bg3) 0%, transparent 60%),
+                  radial-gradient(1200px 800px at 120% 10%, var(--bg2) 0%, transparent 60%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* Floating balloons */
+    .balloons{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .balloon{ position:absolute; bottom:-120px; width:50px; height:70px; border-radius:50%;
+      filter:drop-shadow(0 10px 12px rgba(0,0,0,.15)); opacity:.8; animation:floatUp linear infinite;
+    }
+    .balloon::after{ content:""; position:absolute; bottom:-16px; left:50%; width:2px; height:20px; background:#888; transform:translateX(-50%); }
+    @keyframes floatUp{
+      0%{ transform:translateY(0) translateX(0) rotate(0) }
+      100%{ transform:translateY(-120vh) translateX(20px) rotate(6deg) }
+    }
+
+    header{
+      position:relative; z-index:1; padding: clamp(24px, 5vw, 60px) 20px 10px;
+      text-align:center;
+    }
+    .title{
+      font-size: clamp(28px, 6vw, 64px);
+      line-height:1.05; margin:0; letter-spacing:.5px;
+      text-shadow:0 4px 0 hsla(354, 90%, 48%, 0.4);
+    }
+    .subtitle{ margin:.5rem auto 1rem; max-width:56ch; color:rebeccapurple; font-size:clamp(20px, 2.8vw, 25px); }
+
+    .chip{
+      display:inline-flex; gap:.5rem; align-items:center; padding:.4rem .8rem; border-radius:999px; background:#fff8;
+      backdrop-filter:blur(6px); box-shadow:0 4px 0 rgba(225, 18, 18, 0.4) inset, 0 8px 20px #0000001a; font-weight:600;
+    }
+
+    /* Surprise button */
+    .actions{ margin:1.25rem 0 2rem; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn{
+      --ring:0 0 0 0 rgba(124,58,237,0);
+      appearance:none; border:0; cursor:pointer; border-radius:16px; padding:14px 20px; font-weight:700;
+      background:linear-gradient(180deg, #fff, #f1ecff); color:#2b1747; box-shadow:var(--ring), 0 10px 20px #7c3aed44, 0 2px 0 #fff inset;
+      transition:transform .15s ease, box-shadow .2s ease; will-change:transform;
+    }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 0 0 10px #7c3aed22, 0 12px 26px #7c3aed55, 0 2px 0 #fff inset; }
+    .btn:active{ transform:translateY(0) scale(.99) }
+
+    /* Slider */
+    .slider-wrap{ position:relative; z-index:1; margin:0 auto; max-width:min(1000px, 92vw); border-radius:22px; overflow:hidden; box-shadow:0 20px 40px #00000022; }
+    .slider{ display:flex; width:300px; height: 500px;  transform:translateX(0); transition:transform .3s ease-in-out; background:#0001; }
+    .slide{ width:300px; height: 500px; position:relative; }
+    .slide img{ width:300px; height:500px; object-fit:cover; display:block; filter:contrast(1.02) saturate(1.05); }
+    .caption{ position:absolute; left:0; right:0; bottom:0; padding:16px 20px; color:white; background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0)); font-weight:600; letter-spacing:.3px; }
+
+    .dots{ position:absolute; left:0; right:0; bottom:10px; display:flex; gap:8px; justify-content:center; z-index:2; }
+    .dot{ width:10px; height:10px; border-radius:999px; background:#ffffff80; border:1px solid #ffffffaa; cursor:pointer; }
+    .dot.active{ background:#fff; }
+
+    .arrow{ position:absolute; top:50%; transform:translateY(-50%); z-index:2; background:#ffffffbb; border:0; border-radius:999px; width:42px; height:42px; display:grid; place-items:center; cursor:pointer; }
+    .arrow:hover{ background:#fff }
+    .arrow.left{ left:10px }
+    .arrow.right{ right:10px }
+
+    /* Cards */
+    .cards{ z-index:1; position:relative; display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+      max-width:min(1100px, 92vw); margin:28px auto 60px; }
+    .card{ background:var(--card); backdrop-filter:blur(10px); border:1px solid #ffffffaa; border-radius:20px; padding:18px 16px; box-shadow:0 10px 30px #00000024; }
+    .card h3{ margin:0 0 8px; font-size:18px; }
+    .card p{ margin:0; color:#333; }
+
+    footer{ text-align:center; padding:30px 16px 60px; color:#333; font-size:14px }
+
+    /* Modal */
+    .modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.35); z-index:50; padding:16px; }
+    .modal.open{ display:grid; }
+    .modal-card{ background:#fff; border-radius:22px; padding:26px; max-width:min(720px, 92vw); box-shadow:0 30px 60px #00000033; text-align:center; }
+    .modal h2{ margin:.2rem 0 .4rem; font-size: clamp(22px, 4.8vw, 36px) }
+    .modal p{ margin:.5rem auto 1rem; color:#444; }
+    .modal .close{ margin-top:4px; }
+
+    /* Confetti canvas */
+    #confetti{ position:fixed; inset:0; pointer-events:none; z-index:40; display:none; }
+
+    @media (max-width:520px){
+      .arrow{ display:none }
+      .subtitle{ padding:0 8px }
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative balloons -->
+  <div class="balloons" id="balloons"></div>
+
+  <header>
+    <div class="chip">🎂 It’s Your Day!</div>
+    <h1 class="title">Happy Birthday, <span id="bday-name">MISS-GOLA 💖</span>! 🎉</h1>
+    <p class="subtitle">Celebrating the love, laughter, and magic you bring into my life,  and hit the surprise button✨</p>
+    <div class="actions">
+      <button class="btn" id="surpriseBtn">🎁 Open the Surprise</button>
+      <button class="btn" id="muteBtn" aria-pressed="false">🔊 Music: On/Off</button>
+    </div>
+  </header>
+
+  <!-- Image Slider -->
+  <section class="slider-wrap" aria-label="Photo memories slider">
+    <button class="arrow left" id="prevBtn" aria-label="Previous slide">◀</button>
+    <div class="slider" id="slider">
+      <!-- TIP: Replace image src URLs below with your own photos (local or web) -->
+      <figure class="slide">
+        <img src="cake.jpg" alt="Smiling birthday person with balloons"/>
+        <figcaption class="caption">Another year of awesomeness! 🥳</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola1.jpeg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola6.jpeg" alt="Birthday cake with candles"/>
+        <figcaption class="caption">Make a wish and blow the candles! ✨</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="cake2.jpg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola5.jpeg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola9.jpeg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="cake4.jpg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola11.jpeg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola7.jpeg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+      <figure class="slide">
+        <img src="gola14.jpeg" alt="Friends celebrating together"/>
+        <figcaption class="caption">Friends, fun, and forever memories. 💜</figcaption>
+      </figure>
+    </div>
+    <button class="arrow right" id="nextBtn" aria-label="Next slide">▶</button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+  </section>
+
+  <!-- Cute wish cards -->
+  <section class="cards">
+    <article class="card">
+       <h3>🎉 Happy Birthday Sister</h3>
+       <p>Sisters are the best gift life gave me. 💖</p>
+    </article>
+    <article class="card">
+      <h3>💌 A Little Note</h3>
+      <p>Do something brave, something kind, and something unforgettable this year.</p>
+    </article>
+    <article class="card">
+      <h3>🌈 My Rainbow</h3>
+      <p>You color my world in the brightest shades. 🌸</p>
+    </article>
+    <article class="card">
+      <h3>🧁 Sweet Treat</h3>
+      <p>You’re sweeter than all the chocolates in the world! 🍫</p>
+    </article>
+    <article class="card">
+        <h3>🎂 Cake & Joy</h3>
+        <p>May your day be filled with cake, laughter, and love! 🥳</p>
+    </article>
+    <article class="card">
+      <h3>💐 My Partner in Crime</h3>
+      <p>No matter how old we get, you’ll always be my forever friend. 🫶</p>
+    </article>
+    
+  </section>
+
+  <!-- Surprise Modal -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="surpriseTitle">
+    <div class="modal-card">
+      <h2 id="surpriseTitle">Surprise! 💖</h2>
+      <p>You’re loved more than words can say. Here’s to a fabulous year ahead—full of magic, mischief, and milestones.</p>
+      <button class="btn close" id="closeModal">Close</button>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti"></canvas>
+
+  <!-- Music (replace src with your song; autoplay is user-gesture gated) -->
+  <audio id="music" loop preload="auto">
+    <!-- Replace with your own: local file path or URL -->
+    <source src="song1.mp4" type="audio/mpeg" />
+  </audio>
+
+  <footer>Made with love💜 for your special day.—<span id="year"></span></footer>
+
+  <script>
+    // ------- Configuration (edit these) -------
+    const PERSON_NAME = 'Miss.Panini Bhardwaj 💖'; // Change the name shown in the heading
+    const BALLOON_COLORS = ['#ff6b6b','#ffd93d','#6bcB77','#4d96ff','#9b5de5','#00bbf9','#f15bb5'];
+    const BALLOON_COUNT = 16; // mobile may show fewer due to viewport
+    const SLIDE_INTERVAL_MS = 3500; // auto-slide speed
+    // ------------------------------------------
+
+    document.getElementById('bday-name').textContent = PERSON_NAME;
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Balloons
+    const bWrap = document.getElementById('balloons');
+    const vw = () => Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    for(let i=0;i<BALLOON_COUNT;i++){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      const size = 40 + Math.random()*40; // 40-80px
+      b.style.width = size+'px'; b.style.height = size*1.3+'px';
+      b.style.left = (Math.random()* (vw()-size)) + 'px';
+      b.style.background = BALLOON_COLORS[i % BALLOON_COLORS.length];
+      b.style.animationDuration = (10 + Math.random()*12) + 's';
+      b.style.animationDelay = (-Math.random()*10) + 's';
+      bWrap.appendChild(b);
+    }
+
+    // Slider logic
+    const slider = document.getElementById('slider');
+    const slides = Array.from(slider.children);
+    const dotsWrap = document.getElementById('dots');
+    let index = 0; let timer = null; let isHover = false;
+
+    function buildDots(){
+      dotsWrap.innerHTML = '';
+      slides.forEach((_,i)=>{
+        const d = document.createElement('button'); d.className='dot'; d.setAttribute('aria-label', 'Go to slide '+(i+1));
+        d.addEventListener('click',()=>goTo(i)); dotsWrap.appendChild(d);
+      });
+    }
+    function update(){
+      slider.style.transform = `translateX(${-index*100}%)`;
+      [...dotsWrap.children].forEach((d,i)=>d.classList.toggle('active', i===index));
+    }
+    function next(){ index = (index+1)%slides.length; update(); }
+    function prev(){ index = (index-1+slides.length)%slides.length; update(); }
+    function goTo(i){ index = i; update(); resetTimer(); }
+    function start(){ timer = setInterval(()=>{ if(!isHover) next(); }, SLIDE_INTERVAL_MS); }
+    function resetTimer(){ if(timer){ clearInterval(timer); start(); } }
+
+    document.getElementById('nextBtn').addEventListener('click', ()=>{ next(); resetTimer(); });
+    document.getElementById('prevBtn').addEventListener('click', ()=>{ prev(); resetTimer(); });
+    slider.addEventListener('mouseenter', ()=> isHover = true);
+    slider.addEventListener('mouseleave', ()=> isHover = false);
+
+    buildDots(); update(); start();
+
+    // Surprise modal + music + confetti
+    const modal = document.getElementById('modal');
+    const surpriseBtn = document.getElementById('surpriseBtn');
+    const closeModal = document.getElementById('closeModal');
+    const music = document.getElementById('music');
+    const muteBtn = document.getElementById('muteBtn');
+
+    surpriseBtn.addEventListener('click', async ()=>{
+      openModal();
+      playMusic();
+      launchConfetti(4200);
+    });
+    closeModal.addEventListener('click', closeModalFn);
+
+    function openModal(){ modal.classList.add('open'); }
+    function closeModalFn(){ modal.classList.remove('open'); }
+
+    function playMusic(){
+      if(music.paused){ music.volume = 0.8; music.play().catch(()=>{}); }
+    }
+    muteBtn.addEventListener('click', ()=>{
+      if(music.muted){ music.muted = false; muteBtn.setAttribute('aria-pressed','false'); }
+      else { music.muted = true; muteBtn.setAttribute('aria-pressed','true'); }
+    });
+
+    // Simple confetti generator
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let confettiPieces = []; let confettiAnim;
+
+    function sizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', sizeCanvas); sizeCanvas();
+
+    function launchConfetti(duration=3000){
+      canvas.style.display = 'block';
+      confettiPieces = Array.from({length:220}, ()=>spawnPiece());
+      const start = performance.now();
+      cancelAnimationFrame(confettiAnim);
+      (function frame(now){
+        const t = now - start; drawConfetti();
+        if(t < duration){ confettiAnim = requestAnimationFrame(frame); }
+        else { canvas.style.display = 'none'; }
+      })(start);
+    }
+
+    function spawnPiece(){
+      const colors = BALLOON_COLORS;
+      return {
+        x: Math.random()*canvas.width,
+        y: -10 - Math.random()*canvas.height*0.3,
+        r: 6+Math.random()*10,
+        c: colors[Math.floor(Math.random()*colors.length)],
+        a: Math.random()*Math.PI*2,
+        v: 2 + Math.random()*3,
+        s: Math.random()*0.02 + 0.01
+      };
+    }
+
+    function drawConfetti(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      confettiPieces.forEach(p=>{
+        p.y += p.v; p.x += Math.sin(p.a += p.s);
+        ctx.save(); ctx.beginPath(); ctx.fillStyle = p.c; ctx.translate(p.x, p.y); ctx.rotate(p.a);
+        ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+        ctx.restore();
+        if(p.y > canvas.height+20) Object.assign(p, spawnPiece(), { y: -20 });
+      });
+    }
+
+    // Accessibility: close modal with Escape
+    window.addEventListener('keydown', (e)=>{
+      if(e.key==='Escape' && modal.classList.contains('open')) closeModalFn();
+    });
+  </script>
+
+  <!-- How to customize:
+    1) Change PERSON_NAME at the top of the script.
+    2) Replace the 3 <img src=...> URLs with your own photos. Add more <figure class="slide"> to extend.
+    3) Put your favorite song URL in the <audio> tag's <source>.
+    4) Edit colors via CSS variables at :root (e.g., --accent, --bg1..3).
+    5) Deploy: save as birthday.html and open in a browser. Works offline 🥳
+  -->
+</body>
+</html>
+ 
